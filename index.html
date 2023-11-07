@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片 Pic DuoYu Cloud - 图床</title>
+    <link rel="Shortcut Icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="/static/css/style.css">
+
+    <!-- vue -->
+    <script src="/static/js/vue/vue3.2.36.js"></script>
+    <script src="/static/js/vue/axios1.3.4.js"></script>
+    <!-- element-plus -->
+    <link rel="stylesheet" href="/static/js/element/element-plus2.3.1.css" />
+    <script src="/static/js/element/vuenextelement-plus3.2.36.js"></script>
+    <script src="/static/js/element/elementplus2.3.1.js"></script>
+    <!-- video.js -->
+    <link href="/static/videojs/video-js.min.css" rel="stylesheet">
+    <script src="/static/videojs/video.min.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <main>
+            <header class="banner-box">
+                <div class="search-for">
+                    <h1>Pic DuoYu Cloud - 图床</h1>
+                    <div class="input-box">
+                        <input type="sreach" v-model="search" id="searchinput" placeholder="请输入搜索内容  [ Ctrl + A]" />
+                        <img class="search-icon" src="/static/images/icon/search.png" alt="搜索">
+                    </div>
+                </div>
+            </header><!-- banner -->
+
+            <article class="content-article">
+                <div class="column-box">
+                    <ul>
+                        <li @click="this.search = '' " v-bind:class="{ active: search == ''}">
+                            <div class="column-div">
+                                <p>全部</p>
+                                <img src="/static/images/icon/all.png" :alt="item">
+                            </div>
+                        </li>
+                        <li v-for="(item,index) in columnarr" :key="index" @click="columndind(item.type)"
+                            v-bind:class="{ active: search == item.type}">
+                            <div class="column-div">
+                                <p>{{columnarr[index].name}}</p>
+                                <img :src="columnarr[index].icon" :alt="item">
+                            </div>
+                        </li>
+                    </ul>
+                </div><!-- 栏目 -->
+
+                <div class="tag-box">
+                    <div class="tag-box-item">
+                        <span>后缀：</span>
+                        <ul>
+                            <li v-for="(item,index) in setexname" :key="index" @click="columndind(item)"
+                                v-bind:class="{ active: search == item}">{{item}}</li>
+                        </ul>
+                    </div>
+                    <div class="tag-box-item">
+                        <span>分类：</span>
+                        <ul>
+                            <li v-for="(item,index) in setclass" :key="index" @click="tagdind(item)"
+                                v-bind:class="{ active: search == item}">{{item}}</li>
+                        </ul>
+                    </div>
+                    <div class="tag-box-item">
+                        <span>标签：</span>
+                        <ul>
+                            <li v-for="(item,index) in settag" :key="index" @click="tagdind(item)"
+                                v-bind:class="{ active: search == item}">{{item}}</li>
+                        </ul>
+                    </div>
+                </div><!-- 标签/分类 -->
+
+
+                <div class="PureVillage">
+
+                    <div class="pic-item pic-item-add">
+                        <div class="add-img">
+                            <el-upload class="upload-demo" action="" :http-request="upload" drag multiple></el-upload>
+                        </div>
+                    </div><!-- 添加 -->
+
+                    <div class="pic-item" v-for="(item,index) in finddata" :key="item.id">
+                        <div class="info" @click="lookmodel(item)">
+                            <p class="date-p">{{item.date}}</p>
+                            <p class="size-p">{{item.size}}</p>
+                            <p class="typesof-p">{{item.exname}}</p>
+                        </div>
+                        <div class="tools">
+                            <div class="tools-delete tools-icon" @click="delpath(item.id,item.url)">
+                                <img src="/static/images/icon/delete.png" alt="删除" title="删除">
+                            </div>
+                            <div class="tools-delete tools-icon" @click="editpath(item)">
+                                <img src="/static/images/icon/edit.png" alt="编辑" title="编辑">
+                            </div>
+                            <div class="tools-download tools-icon">
+                                <a :href="'/'+item.url" target="_blank">
+                                    <img src="/static/images/icon/eye.png" alt="打开查看" title="打开查看">
+                                </a>
+                            </div>
+                            <div class="tools-download tools-icon">
+                                <a :href="'/'+item.url" :download="item.name+'.'+item.exname">
+                                    <img src="/static/images/icon/download.png" alt="下载" title="下载">
+                                </a>
+                            </div>
+                            <div class="tools-copy tools-icon" @click="copylink(urldatum+item.url)">
+                                <img src="/static/images/icon/copy.png" alt="复制url" title="复制url">
+                            </div>
+                        </div>
+
+                        <div v-if="(item.column === 'image')" class="view-div">
+                            <img src="/static/images/icon/mark.png" class="mark" alt="">
+                            <el-image :src="urldatum+item.url" lazy class="view-img" fit="scale-down" />
+                        </div>
+                        <div v-else class="view-div view-div-other">
+                            <img :src="computedText(item.exname)" alt="" class="view-img-icon">
+                            <p class="view-img-icontext view-img-icontext-name">{{item.name}}</p>
+                            <p class="view-img-icontext view-img-icontext-hozui">{{item.exname}}</p>
+                        </div> <!-- 显示类型 -->
+
+                    </div><!-- 文件列表 -->
+
+
+                    <el-dialog v-model="dialogTableVisible" :title="lookitem.name" width="70%" height="90%"
+                        align-center>
+                        <div class="view-modelbox">
+                            <div class="lookmodel-img" v-if="(lookitem.column === 'image')">
+                                <el-image style="width: 100%; height: 100%" :src="urldatum+lookitem.url"
+                                    fit="contain" />
+                            </div>
+                            <div class="lookmodel-img" v-else-if="(lookitem.column === 'video')">
+                                <video id="my-player" class="video-js" controls preload="auto"
+                                    poster="/static/images/bn/sea.jpg" data-setup='{}'>
+                                    <source :src="urldatum+lookitem.url" type="video/mp4">
+                                    </source>
+                                    <source :src="urldatum+lookitem.url" type="video/webm">
+                                    </source>
+                                    <source :src="urldatum+lookitem.url" type="video/ogg">
+                                    </source>
+                                    <p class="vjs-no-js">
+                                        To view this video please enable JavaScript, and consider upgrading to a
+                                        web browser that
+                                        <a href="https://videojs.com/html5-video-support/" target="_blank">
+                                            supports HTML5 video
+                                        </a>
+                                    </p>
+                                </video>
+                            </div>
+                            <div class="lookmodel-img" v-else>
+                                <el-image style="width: 100px; height: 100px" :src="computedText(lookitem.exname)"
+                                    fit="scale-down" />
+                            </div> <!-- 类型 -->
+
+                            <div class="info-div">
+                                <div>
+                                    <p class="date-p">时间：{{lookitem.date}}</p>
+                                    <p class="size-p">文件大小：{{lookitem.size}}</p>
+                                    <p class="link-p" @click="copylink(urldatum+lookitem.url)">
+                                        链接：{{urldatum}}{{lookitem.url}}</p>
+                                    <p class="typesof-p">文件类型：{{lookitem.column}}</p>
+                                    <p class="typesof-p">文件格式：{{lookitem.exname}}</p>
+
+                                    <div class="tag-box">
+                                        <div class="tag-box-item" v-if="lookitem.class !== ''">
+                                            <span>分类：</span>
+                                            <ul>
+                                                <li @click="tagdind(lookitem.class)">{{lookitem.class}}</li>
+                                            </ul>
+                                        </div>
+                                        <div class="tag-box-item" v-if="lookitem.tag.length !== 0">
+                                            <span>标签：</span>
+                                            <ul>
+                                                <li v-for="(item,index) in lookitem.tag" :key="index"
+                                                    @click="tagdind(item)">
+                                                    {{item}}</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div><!-- 信息 -->
+
+                                <div class="tools-view">
+                                    <div class="tools-delete tools-icon" @click="delpath(lookitem.id,lookitem.url)">
+                                        <img src="/static/images/icon/delete.png" alt="删除" title="删除">
+                                    </div>
+                                    <div class="tools-delete tools-icon" @click="editpath(lookitem)">
+                                        <img src="/static/images/icon/edit.png" alt="编辑" title="编辑">
+                                    </div>
+
+                                    <div class="tools-download tools-icon">
+                                        <a :href="'/'+lookitem.url" target="_blank">
+                                            <img src="/static/images/icon/eye.png" alt="打开查看" title="打开查看">
+                                        </a>
+                                    </div>
+                                    <div class="tools-download tools-icon">
+                                        <a :href="'/'+lookitem.url" :download="lookitem.name+'.'+lookitem.exname">
+                                            <img src="/static/images/icon/download.png" alt="下载" title="下载">
+                                        </a>
+                                    </div>
+                                    <div class="tools-copy tools-icon" @click="copylink(urldatum+lookitem.url)">
+                                        <img src="/static/images/icon/copy.png" alt="复制url" title="复制url">
+                                    </div>
+                                </div><!-- 工具 -->
+
+                            </div>
+                        </div>
+                    </el-dialog> <!-- 弹窗预览 -->
+
+                    <el-dialog v-model="editVisible" title="编辑">
+                        <el-form :model="editform">
+                            <el-form-item label="名称">
+                                <el-input v-model="editform.name" maxlength="40" show-word-limit />
+                            </el-form-item>
+
+                            <el-form-item label="分类">
+                                <el-radio-group v-model="editform.class">
+                                    <el-radio v-for="city in setclass" :key="city" :label="city"
+                                        size="large">{{city}}</el-radio>
+                                </el-radio-group>
+                            </el-form-item>
+                            <el-form-item label="">
+                                <el-button v-if="!inputclass" class="button-new-tag ml-1" size="small"
+                                    @click="showInputclass">
+                                    + New Class
+                                </el-button>
+                                <el-input v-else ref="InputRefclass" v-model="inputtagValueclass" maxlength="15"
+                                    show-word-limit clearable size="small" @keyup.enter="handleInputConfirmclass"
+                                    @blur="handleInputConfirmclass" />
+                            </el-form-item>
+
+                            <el-form-item label="标签">
+                                <el-checkbox-group v-model="editform.tag" :min="0" :max="4">
+                                    <el-checkbox v-for="city in settag" :key="city" :label="city">{{city}}</el-checkbox>
+                                </el-checkbox-group>
+                            </el-form-item>
+
+                            <el-form-item label="">
+                                <el-button v-if="!inputtag" class="button-new-tag ml-1" size="small" @click="showInput">
+                                    + New Tag
+                                </el-button>
+                                <el-input v-else ref="InputRef" v-model="inputtagValue" maxlength="15" show-word-limit
+                                    clearable size="small" @keyup.enter="handleInputConfirm"
+                                    @blur="handleInputConfirm" />
+                            </el-form-item>
+
+                            <el-form-item label="">
+                                <div class="Preview-box">
+                                    <div v-if="(editform.column === 'image')" class="view-div">
+                                        <el-image style="width: 150px; height: 150px" :src="urldatum+editform.url"
+                                            @click="lookmodel(editform)" fit="scale-down" />
+                                    </div>
+                                    <div v-else class="view-div view-div-other">
+                                        <el-image style="width: 80px; height: 80px" :src="computedText(editform.exname)"
+                                            @click="lookmodel(editform)" fit="scale-down" />
+                                    </div> <!-- 类型 -->
+
+                                    <div class="Preview-kuan">
+                                        <el-upload class="upload-demo" action="" :http-request="editupload" drag
+                                            multiple></el-upload>
+                                    </div>
+                                </div>
+
+                            </el-form-item>
+                        </el-form>
+                        <template #footer>
+                            <span class="dialog-footer">
+                                <el-button @click="editVisible = false">取消</el-button>
+                                <el-button type="primary" @click="oneditSubmit(editform)">
+                                    确定
+                                </el-button>
+                            </span>
+                        </template>
+                    </el-dialog><!-- 编辑弹窗 -->
+
+                    <el-dialog v-model="logonVisible" title="登录" width="30%" align-center>
+                        <div>
+                            <el-input ref="LogRefInputuser" v-model="fromlogon.user" :disabled="disabledden"
+                                @keyup.enter="passwordfocus()" placeholder="账号" />
+                        </div>
+                        <div style="margin-top: 1rem;">
+                            <el-input ref="LogRefInputpass" v-model="fromlogon.password" :disabled="disabledden"
+                                type="password" show-password @keyup.enter="logonSubmit()" placeholder="密码" />
+                        </div>
+                        <template #footer>
+                            <span class="dialog-footer">
+                                <el-button @click="logonVisible = false">取消</el-button>
+                                <el-button type="primary" @click="logonSubmit()" :disabled="disabledden">
+                                    确定
+                                </el-button>
+                            </span>
+                        </template>
+                    </el-dialog><!-- 登录弹窗 -->
+
+                </div><!-- 展示区 -->
+
+            </article>
+        </main>
+    </div>
+
+    <script>
+        const App = {
+            data() {
+                return {
+                    // urldatum: 'http://127.0.0.1:7060/',
+                    urldatum: 'https://picserver.duoyu.link/',
+                    token: "",
+                    fromlogon: {
+                        user: "",
+                        password: ""
+                    },
+                    dataArr: '',
+                    setexname: '',
+                    setclass: '',
+                    settag: '',
+                    dialogTableVisible: false,
+                    editVisible: false,
+                    editform: {},
+                    editupfile: "",
+                    lookitem: '',
+                    search: '',
+                    inputtag: false, // 标签
+                    inputtagValue: '',
+                    inputclass: false, // 分类
+                    inputtagValueclass: '',
+                    logonVisible: false,
+                    disabledden: false,
+                    columnarr: [
+                        {
+                            type: "image",
+                            name: "图片",
+                            icon: "/static/images/icon/images.png"
+                        },
+                        {
+                            type: "text",
+                            name: "文件",
+                            icon: "/static/images/icon/text.png"
+                        },
+                        {
+                            type: "application",
+                            name: "文件夹",
+                            icon: "/static/images/icon/file.png"
+                        },
+                        {
+                            type: "video",
+                            name: "视频",
+                            icon: "/static/images/icon/video.png"
+                        },
+                    ],
+                }
+            },
+            computed: {
+                computedText() {
+                    // 计算属性要return一个函数接收参数
+                    return function (state) {
+                        switch (state) {
+                            case "txt":
+                                return "/static/images/icon/text.png";
+                                break;
+                            case "md":
+                                return "/static/images/icon/markdown.png";
+                                break;
+                            case "json":
+                                return "/static/images/icon/json.png";
+                                break;
+                            case "zip":
+                                return "/static/images/icon/zip.png";
+                                break;
+                            case "js":
+                                return "/static/images/icon/javascript.png";
+                                break;
+                            case "css":
+                                return "/static/images/icon/css.png";
+                                break;
+                            case "html":
+                                return "/static/images/icon/html.png";
+                                break;
+                            case "py":
+                                return "/static/images/icon/python.png";
+                                break;
+                            case "c":
+                                return "/static/images/icon/c.png";
+                                break;
+                            case "java":
+                                return "/static/images/icon/java.png";
+                                break;
+                            case "png":
+                                return "/static/images/icon/images.png";
+                                break;
+                            case "sql":
+                                return "/static/images/icon/sql.png";
+                                break;
+                            case "docx":
+                                return "/static/images/icon/word.png";
+                                break;
+                            case "pptx":
+                                return "/static/images/icon/ppt.png";
+                                break;
+                            case "xlsx":
+                                return "/static/images/icon/excel.png";
+                                break;
+                            case "pdf":
+                                return "/static/images/icon/pdf.png";
+                                break;
+                            case "mp4":
+                                return "/static/images/icon/video.png";
+                                break;
+                            case "mov":
+                                return "/static/images/icon/video.png";
+                                break;
+                            case "lock":
+                                return "/static/images/icon/lock.png";
+                                break;
+                            default:
+                                return "/static/images/icon/unknown.png";
+                                break;
+                        }
+                    };
+                },
+
+                // 搜索
+                finddata() {
+                    const search = this.search.toLowerCase()//搜索词
+                    if (search) {
+                        //过滤
+                        return this.dataArr.filter(data => {
+                            // console.log(Object.keys(data))//打印出所有等data内等key
+                            // 1:所有项目模糊搜索 对所有key进行搜索
+                            return Object.keys(data).some(key => {
+                                // console.log(data[key],key)
+                                return String(data[key]).toLowerCase().indexOf(search) > -1
+                            })
+                            //2:指定项目模糊搜索 指定对数组内两个项目等key的列进行搜索
+                            // let zhiding = ["zl_no", "date"]//可以指定这一列
+                            // return zhiding.some(key=>{
+                            //     return String(data[key]).toLowerCase().indexOf(search) > -1
+                            // })
+                            //3：单个项过滤搜索 -可以指定具体单个-就不用再用some   直接指定colom为zl_no 的项目进行搜索
+                            // return String(data[this.findby]).toLowerCase().indexOf(search) > -1
+                        })
+                    }
+                    return this.dataArr
+                }
+            },
+            beforeCreate() {
+                // 检查有没有登录
+                let betoken = sessionStorage.getItem("token");
+                if (betoken == '' || betoken == null) {
+                    window.location.href = '/login.html';
+                    return
+                }
+            },
+            created() {
+                this.getdata()
+            },
+            mounted() {
+                // Ctrl + A 搜索
+                let code = 0;
+                let code2 = 0;
+                document.onkeydown = function (e) {
+                    let evn = e || event;
+                    let key = evn.keyCode || evn.which || evn.charCode;
+                    if (key === 17) {
+                        code = 1;
+                    }
+                    if (key === 65) {
+                        code2 = 1;
+                    }
+                    if (code === 1 && code2 === 1) {
+                        // console.log("Ctrl+A");
+                        document.getElementById("searchinput").focus();
+                        code = 0;
+                        code2 = 0;
+                    }
+                };
+                document.onkeyup = function (e) {
+                    if (e.keyCode === 17) {
+                        code = 0;
+                    }
+                    if (e.keyCode === 65) {
+                        code2 = 0;
+                    }
+                };
+            },
+            methods: {
+                // 登录窗口
+                logon() {
+                    let token = sessionStorage.getItem("token")
+                    if (token == '' || token == null) {
+                        this.logonVisible = true;
+                        setTimeout(() => {
+                            this.$nextTick(_ => {
+                                this.$refs.LogRefInputuser.$refs.input.focus();
+                            });
+                        })
+                    } else {
+                        this.$message({
+                            type: 'success',
+                            message: "已登录"
+                        });
+                    }
+                },
+                // 登录密码框聚焦
+                passwordfocus() {
+                    this.$refs.LogRefInputpass.$refs.input.focus();
+                },
+                // 登录提交
+                logonSubmit() {
+                    if (this.fromlogon.password !== '') {
+                        axios.post(this.urldatum + 'logon', {
+                            data: this.fromlogon
+                        }).then((ret) => {
+                            if (ret.data.status === 501) {
+                                this.disabledden = true;
+                                setTimeout(() => {
+                                    this.disabledden = false;
+                                }, ret.data.waiting);
+                            }
+                            if (ret.data.status !== 200) return this.$message.error(ret.data.msg);
+
+                            this.logonVisible = false;
+                            sessionStorage.setItem("token", ret.data.token);
+                            this.$message({
+                                type: 'success',
+                                message: ret.data.msg
+                            });
+
+                        }).catch((error) => { // 请求失败处理
+                            console.log(error, "登录错误");
+                        });
+                    } else {
+                        this.$message({
+                            type: 'info',
+                            message: '密码不能为空'
+                        });
+                    }
+                },
+
+
+                // 上传
+                upload(param) {
+                    let token = sessionStorage.getItem("token")
+                    const toheaders = {
+                        headers: {
+                            authorization: sessionStorage.getItem("token"),
+                        }
+                    };
+                    const formData = new FormData()
+                    formData.append('file', param.file)
+
+                    let url = this.urldatum + 'ingupload/';
+                    axios.post(url, formData, toheaders)
+                        .then((ret) => {
+                            if (ret.data.status !== 200) return this.$message.error(ret.data.msg);
+                            this.$message({
+                                type: 'success',
+                                message: ret.data.msg
+                            });
+                            this.getdata()
+                        })
+                        .catch((error) => { // 请求失败处理
+                            console.log(error, "上传错误");
+                        });
+                },
+
+                // 全部数据
+                getdata() {
+                    let token = sessionStorage.getItem("token")
+                    const toheaders = {
+                        headers: {
+                            authorization: sessionStorage.getItem("token"),
+                        }
+                    };
+                    axios.get(this.urldatum, toheaders)
+                        .then((ret) => {
+                            if (ret.data.status !== 200) return this.$message.error(ret.data.msg);
+                            let reqdata = JSON.parse(JSON.stringify(ret.data.data.datalist));
+                            this.dataArr = reqdata
+                            // console.log(reqdata, "数据");
+                            this.repclass(reqdata)
+                            this.repexname(reqdata)
+                            this.reptag(reqdata)
+                        })
+                        .catch((error) => { // 请求失败处理
+                            console.log(error, "获取全部数据错误");
+                        });
+                },
+
+                // 分类去重
+                repclass(data) {
+                    let claarr = [];
+                    for (let item of data) {
+                        if (item.class !== '') {
+                            claarr.push(item.class)
+                        }
+                    }
+                    this.setclass = Array.from(new Set(claarr));
+                },
+                // 后缀去重
+                repexname(data) {
+                    this.setexname = Array.from(new Set(data.map((k) => k.exname)))
+                },
+
+                // tag去重
+                reptag(data) {
+                    let maptag = []
+                    data.map((k) => k.tag.map((item) => maptag.push(item)));
+                    this.settag = Array.from(new Set(maptag))
+                },
+
+                // 类型查找
+                columndind(item) {
+                    this.search = item;
+                },
+                // tag/class查找
+                tagdind(item) {
+                    this.search = item;
+                    this.dialogTableVisible = false;
+                },
+
+                // 预览窗口
+                lookmodel(item) {
+                    this.lookitem = item
+                    this.dialogTableVisible = true;
+                },
+
+                // 复制链接
+                copylink(link) {
+                    let copyval = document.getElementById("searchinput")
+                    copyval.value = link;
+                    copyval.select();
+                    document.execCommand('copy');
+                    this.$message({
+                        type: 'success',
+                        message: "复制成功"
+                    });
+                },
+
+                // 删除
+                delpath(id, url) {
+                    this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        let token = sessionStorage.getItem("token")
+                        const toheaders = {
+                            headers: {
+                                authorization: sessionStorage.getItem("token"),
+                            }
+                        };
+                        axios.post(this.urldatum + 'delfile', {
+                            data: {
+                                id: id,
+                                url: url,
+                            }
+                        }, toheaders).then((ret) => {
+                            if (ret.data.status !== 200) return this.$message.error(ret.data.msg);
+                            this.$message({
+                                type: 'success',
+                                message: ret.data.msg
+                            });
+                            this.getdata()
+                        }).catch((error) => { // 请求失败处理
+                            console.log(error, "删除错误");
+                        });
+                    }).catch(() => {
+                        this.$message({
+                            type: 'info',
+                            message: '已取消删除'
+                        });
+                    })
+                },
+
+
+                // 编辑窗口
+                editpath(item) {
+                    this.editVisible = true;
+                    this.editform = item;
+                    // console.log(this.editform.column);
+                },
+
+                // 编辑的上传
+                editupload(param) {
+                    const formData = new FormData()
+                    formData.append('file', param.file)
+                    let reg = param.file.type.match(/.+(?=\/)/g)[0];
+                    if (this.editform.column !== reg) return this.$message({
+                        type: 'info',
+                        message: '文件类型不一致，当前类型为' + this.editform.column + '，您上传的类型为：' + reg
+                    });
+
+                    let token = sessionStorage.getItem("token")
+                    const toheaders = {
+                        headers: {
+                            authorization: sessionStorage.getItem("token"),
+                        }
+                    };
+                    // 删除旧的
+                    axios.post(this.urldatum + 'edituploaddel', {
+                        data: this.editform
+                    }, toheaders)
+                        .then((ret) => {
+                            if (ret.data.status !== 200) return this.$message.error(ret.data.msg);
+                            // this.$message({
+                            //     type: 'success',
+                            //     message: ret.data.msg
+                            // });
+                        })
+                        .catch((error) => { // 请求失败处理
+                            console.log(error, "替换删除旧的错误");
+                        });
+
+                    // 替换新的
+                    let url = this.urldatum + 'editupload?urlname=' + this.editform.urlname + '&editid=' + this.editform.id;
+                    axios.post(url, formData, toheaders,)
+                        .then((ret) => {
+                            if (ret.data.status !== 200) return this.$message.error(ret.data.msg);
+                            this.$message({
+                                type: 'success',
+                                message: ret.data.msg
+                            });
+                            this.getdata();
+                            this.editVisible = false;
+                        })
+                        .catch((error) => { // 请求失败处理
+                            console.log(error, "替换错误");
+                        });
+                },
+
+                // 编辑提交
+                oneditSubmit(item) {
+                    let token = sessionStorage.getItem("token")
+                    const toheaders = {
+                        headers: {
+                            authorization: sessionStorage.getItem("token"),
+                        }
+                    };
+                    let url = this.urldatum + 'editfile';
+                    axios.post(url, {
+                        data: {
+                            id: item.id,
+                            data: this.editform
+                        }
+                    }, toheaders).then((ret) => {
+                        if (ret.data.status !== 200) return this.$message.error(ret.data.msg);
+                        this.$message({
+                            type: 'success',
+                            message: ret.data.msg
+                        });
+                        this.editVisible = false;
+                        this.getdata()
+                    }).catch((error) => { // 请求失败处理
+                        console.log(error, "编辑提交错误");
+                    });
+                },
+
+                // 编辑标签添加
+                showInput() {
+                    this.inputtag = true;
+                    this.$nextTick(_ => {
+                        this.$refs.InputRef.$refs.input.focus();
+                    });
+                },
+                handleInputConfirm() {
+                    if (this.inputtagValue !== '') {
+                        this.settag.unshift(this.inputtagValue);
+                        this.editform.tag.unshift(this.inputtagValue);
+                        this.settag = Array.from(new Set(this.settag)) // 去重
+                        this.editform.tag = Array.from(new Set(this.editform.tag)) // 去重
+                    }
+                    this.inputtagValue = '';
+                    this.inputtag = false;
+                },
+
+                // 编辑class添加
+                showInputclass() {
+                    this.inputclass = true;
+                    this.$nextTick(_ => {
+                        this.$refs.InputRefclass.$refs.input.focus();
+                    });
+                },
+                handleInputConfirmclass() {
+                    if (this.inputtagValueclass !== '') {
+                        this.setclass.unshift(this.inputtagValueclass);
+                        this.editform.class = this.inputtagValueclass;
+                        this.setclass = Array.from(new Set(this.setclass)) // 去重
+                    }
+                    this.inputtagValueclass = '';
+                    this.inputclass = false;
+                },
+
+
+            }
+        }
+        const app = Vue.createApp(App);
+        app.use(ElementPlus);
+        app.mount('#app');
+    </script>
+</body>
+
+</html>

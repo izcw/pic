@@ -1,0 +1,146 @@
+* {
+    padding: 0;
+    margin: 0;
+  }
+  
+  html, body {
+    width: 100%;
+    height: 100%;
+  }
+
+  #app{
+    width: 100%;
+    height: 100%;
+  }
+  
+  .login-box {
+    width: 100%;
+    height: 100%;
+    display: flex;
+  }
+  
+  
+  /* left */
+  .login-box .left-box {
+    width: 40%;
+    height: 100%;
+    background-color: #f4f6f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  @media (max-width: 1200px) {
+    .login-box .left-box {
+      width: 60%;
+    }
+  
+    .login-box .right-box {
+      width: 40%;
+    }
+  }
+  
+  @media (max-width: 992px) {
+    .login-box .left-box {
+      width: 100%;
+    }
+  
+    .login-box .right-box {
+      display: none;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .frame-content {
+      width: calc(100% - 60px);
+      margin: 30px;
+    }
+  }
+  
+  .frame-content {
+    width: 420px;
+    height: 600px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+  }
+
+  /* 表单 */
+  .item-form input {
+    width: calc(100% - 2rem);
+    height: 40px;
+    line-height: 40px;
+    color: #666;
+    border: 1px solid #ccc;
+    background-color: #f4f6f9;
+    margin: 10px 0;
+    padding: 0 1rem;
+    border-radius: 12px;
+    outline: none;
+  }
+  
+  .item-form .input-click {
+    width: 100%;
+    cursor: pointer;
+    color: #fff;
+    border: none;
+    background-color: #98ceff;
+  }
+  
+  
+  /* logo及信息 */
+  .item-introduce h1 {
+    font-size: 26px;
+    color: #191d21;
+  }
+  
+  .item-introduce p {
+    color: #98a6ad;
+  }
+  
+  /* 底部信息 */
+  .item-foot {
+    text-align: center;
+    font-size: 12px;
+    line-height: 20px;
+    color: rgba(31, 34, 37, 0.4);
+  }
+  
+  .item-foot a {
+    color: rgba(31, 34, 37, 0.4);
+  }
+  
+  /* left */
+  
+  
+  /* right */
+  .login-box .right-box {
+    width: 60%;
+    height: 100%;
+    background-color: #e4e9ef;
+    background-image: url(/static/images/bn/shu2.jpg);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    position: relative;
+  }
+  
+  .introduce-texts {
+    position: absolute;
+    bottom: 60px;
+    left: 60px;
+  }
+  
+  .right-box h2 {
+    color: #fff;
+    font-size: 40px;
+  }
+  
+  
+  .right-box p {
+    color: rgba(255, 255, 255, 0.671);
+    font-size: 18px;
+    line-height: 40px;
+  }
+  
+  /* right */

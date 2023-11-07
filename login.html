@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>login</title>
+    <link rel="stylesheet" href="static/css/login.css">
+    <!-- vue -->
+    <script src="/static/js/vue/vue3.2.36.js"></script>
+    <script src="/static/js/vue/axios1.3.4.js"></script>
+    <!-- element-plus -->
+    <link rel="stylesheet" href="/static/js/element/element-plus2.3.1.css" />
+    <script src="/static/js/element/vuenextelement-plus3.2.36.js"></script>
+    <script src="/static/js/element/elementplus2.3.1.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <div class="login-box">
+            <div class="left-box">
+                <div class="frame-content">
+                    <div class="item-introduce">
+                        <h1>欢迎使用<span>Pic DuoYu Cloud - 图床</span></h1>
+                        <p>hello！你好呀！</p>
+                    </div>
+                    <div class="item-form">
+                        <form action="">
+                            <input type="text" name="email" v-model="fromlogon.user" class="user" placeholder="请输入账号"
+                                @keyup.enter="passwordfocus()"><br>
+                            <input type="password" name="password" v-model="fromlogon.password" class="password"
+                                placeholder="请输入密码" @keyup.enter="logonSubmit()">
+                            <input type="button" value="登录" @click="logonSubmit()" class="input-click">
+                        </form>
+                    </div>
+                    <div class="item-foot">
+                        <p>单击上面的“继续”，即表示您已阅读并理解并同意izcw的&ensp;服务条款&ensp;与&ensp;隐私政策<a
+                                href="https://www.zhangchengwei.work">关于我的</a>
+                        </p>
+                        <p>Copyright © 2023 izcw</p>
+                    </div>
+                </div>
+
+            </div><!-- left-box -->
+
+            <div class="right-box">
+                <div class="introduce-texts">
+                    <h2>Welcome To Pic DuoYu Cloud</h2>
+                    <p>hello 欢迎你</p>
+                    <p>这是一个登录页</p>
+                </div>
+
+            </div><!-- right-box -->
+        </div>
+    </div>
+    <script>
+        const App = {
+            data() {
+                return {
+                    // urldatum: 'http://127.0.0.1:7060/',
+                    urldatum: 'https://picserver.duoyu.link/',
+                    fromlogon: {
+                        user: "",
+                        password: ""
+                    },
+                    token: ""
+                }
+            },
+            beforeCreate() {
+            },
+            created() {
+                this.token = sessionStorage.getItem("token");
+                console.log(this.token, "??");
+                if (this.token == '' || this.token == null) {
+                } else {
+                    window.location.href = '/';
+                    return
+                }
+            },
+            mounted() {
+                document.querySelector(".user").focus();
+            },
+            methods: {
+                passwordfocus() {
+                    document.querySelector(".password").focus();
+                },
+                // 登录
+                logonSubmit() {
+                    console.log(this.fromlogon);
+
+                    if (this.fromlogon.user === '') return this.$message({
+                        type: 'info',
+                        message: '账号不能为空'
+                    });
+
+                    if (this.fromlogon.password === '') return this.$message({
+                        type: 'info',
+                        message: '密码不能为空'
+                    });
+
+                    axios.post(this.urldatum + 'logon', {
+                        data: this.fromlogon
+                    }).then((ret) => {
+                        if (ret.data.status === 501) {
+                            this.disabledden = true;
+                            setTimeout(() => {
+                                this.disabledden = false;
+                            }, ret.data.waiting);
+                        }
+                        if (ret.data.status !== 200) return this.$message.error(ret.data.msg);
+                        this.logonVisible = false;
+                        sessionStorage.setItem("token", ret.data.token);
+                        this.$message({
+                            type: 'success',
+                            message: ret.data.msg
+                        });
+                        window.location.href = '/';
+                    }).catch((error) => { // 请求失败处理
+                        console.log(error, "错误");
+                    });
+
+                },
+            }
+        }
+        const app = Vue.createApp(App);
+        app.use(ElementPlus);
+        app.mount('#app');
+    </script>
+</body>
+
+</html>
