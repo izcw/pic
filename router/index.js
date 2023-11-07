@@ -9,10 +9,10 @@ const jwt = require("jsonwebtoken"); //token
 
 // 令牌验证
 const SECRET = "hhbmdAcXEuY29tIiwicGFzc3dvcmQiOiJCaHp5MDQyMCIsImlhdCI6MTY4NTg4MTg2M30.uxCUGGInMAAKYRHUKBskDE3VwWkKc8";
+const users = '$2a$06$8kmmHhM.hqdyKpVkzNS/H.BXz5N1UoQduLBIM80EEvOo/afNeufBO';
 const pass = '$2b$10$1JhcdTVx8i32Ruw.UMq1JOTskXiL0d7rGlfhoCmAydISnKSRu5PKa';
-const users = '$2a$06$8kmmHhM.hqdyKpVkzNS/H.BXz5N1UoQduLBIM80EEvOo/afNeufBO'
 // const pass = bcrypt.hashSync("", 6); // 加密密码
-// console.log(pass, "密码加密");
+// console.log(pass, "账号或密码加密");
 
 
 //登录
